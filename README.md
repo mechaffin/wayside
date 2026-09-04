@@ -93,9 +93,13 @@ request confirms legally.
 
 ## Analytics
 
-GoatCounter, no cookies, roughly 3KB, one line in
-[WaysideLayout.astro](src/layouts/WaysideLayout.astro). It does not count on
+GoatCounter at `mechaffin.goatcounter.com`, no cookies, roughly 3KB, one line
+in [WaysideLayout.astro](src/layouts/WaysideLayout.astro). It does not count on
 localhost, so an empty dashboard during development is expected.
+
+That endpoint also collects the personal site, so read wayside traffic by
+filtering on the `/wayside/` path prefix. If this project ever moves to a club,
+its analytics history does not move with it.
 
 The measurement that matters after the trial is views per `/w/` route by hour.
 If one route dominates, placement matters more than content. If everything is
