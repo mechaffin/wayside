@@ -1,0 +1,46 @@
+---
+import { getCollection } from 'astro:content';
+import WaysideLayout from '../../layouts/WaysideLayout.astro';
+import { link, membersOf } from '../../lib/resolve';
+
+export async function getStaticPaths() {
+  const collections = await getCollection('collections');
+  return collections.map((c) => ({ params: { slug: c.id }, props: { collection: c } }));
+}
+
+const { collection } = Astro.props;
+const members = await membersOf(collection);
+// Drafts are listed for the maintainer but not linked to readers who arrived
+// from a printed code, so they sit at the bottom marked as drafts.
+const live = members.filter((m) => m.data.status === 'live');
+const drafts = members.filter((m) => m.data.status === 'draft');
+---
+
+<WaysideLayout
+  title={collection.data.title}
+  description={collection.data.summary}
+  shareSlug={collection.id}
+  path={`/c/${collection.id}`}
+>
+  <h1>{collection.data.title}</h1>
+  <p>{collection.data.summary}</p>
+
+  <ul class="memberships">
+    {live.map((m) => (
+      <li><a href={link(`/w/${m.id}`)}>{m.data.title}</a></li>
+    ))}
+  </ul>
+
+  {
+    drafts.length > 0 && (
+      <>
+        <h2>Not finished yet</h2>
+        <ul class="memberships">
+          {drafts.map((m) => (
+            <li><a href={link(`/w/${m.id}`)}>{m.data.title}</a></li>
+          ))}
+        </ul>
+      </>
+    )
+  }
+</WaysideLayout>

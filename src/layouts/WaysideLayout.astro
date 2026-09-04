@@ -1,0 +1,332 @@
+---
+/**
+ * The shell for every reader-facing page.
+ *
+ * Wayside-specific chrome (byline footer, collection list, superseded banner)
+ * is driven by props rather than living in the page, so /w/, /c/, and / all
+ * get the same head, the same stylesheet, and the same analytics line.
+ */
+import { link, absolute, isoDate, readableDate, type Author } from '../lib/resolve';
+
+interface Props {
+  title: string;
+  /** Meta description. Omitted on the inventory page, which is noindex anyway. */
+  description?: string;
+  /** Keeps the maintainer view out of search results. */
+  noindex?: boolean;
+  /** Slug whose QR code the share block shows. Omit to hide the share block. */
+  shareSlug?: string;
+  /** Path this page lives at, for the share link and the canonical URL. */
+  path?: string;
+  /** Rendered as a byline in the footer. */
+  authors?: Author[];
+  reviewedBy?: Author[];
+  updated?: Date;
+  /** Title and path of the wayside that replaces this one. */
+  supersededBy?: { title: string; path: string };
+}
+
+const {
+  title,
+  description,
+  noindex = false,
+  shareSlug,
+  path,
+  authors = [],
+  reviewedBy = [],
+  updated,
+  supersededBy,
+} = Astro.props;
+
+const canonical = path ? absolute(path) : undefined;
+const shareUrl = path ? absolute(path) : undefined;
+
+// Authors who are also listed as reviewers appear once, under the byline,
+// because "reviewed by the person who wrote it" is not a credibility signal.
+const reviewers = reviewedBy.filter((r) => !authors.some((a) => a.id === r.id));
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    {canonical && <link rel="canonical" href={canonical} />}
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href={link('/favicon.svg')} type="image/svg+xml" />
+    <style is:global>
+      /* System fonts only. A web font is a blocking request on bad cell for
+         no gain on a page that is mostly body text. */
+      :root {
+        --ink: #14181c;
+        --ink-soft: #4c565f;
+        --paper: #fdfdfc;
+        --rule: #d8d5cf;
+        --accent: #1f5d3f;
+        --accent-ink: #ffffff;
+        --warn-bg: #fdf3d8;
+        --warn-rule: #b98a1a;
+        --measure: 34rem;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --ink: #ecebe7;
+          --ink-soft: #a8b0b6;
+          --paper: #16181a;
+          --rule: #383c40;
+          --accent: #7fd1a3;
+          --accent-ink: #10241a;
+          --warn-bg: #322a12;
+          --warn-rule: #c9a13c;
+        }
+      }
+      * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font: 1.0625rem/1.55 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        overflow-wrap: break-word;
+      }
+      .wrap {
+        max-width: var(--measure);
+        margin: 0 auto;
+        padding: 1.25rem 1.125rem 3rem;
+      }
+      h1 {
+        font-size: 1.6rem;
+        line-height: 1.2;
+        margin: 0.5rem 0 1rem;
+        letter-spacing: -0.01em;
+      }
+      h2 { font-size: 1.2rem; line-height: 1.3; margin: 1.9rem 0 0.5rem; }
+      h3 { font-size: 1.0625rem; margin: 1.4rem 0 0.4rem; }
+      p, li { font-size: 1.0625rem; }
+      p { margin: 0 0 1rem; }
+      ul, ol { padding-left: 1.35rem; }
+      li { margin-bottom: 0.4rem; }
+      strong { font-weight: 650; }
+      hr { border: 0; border-top: 1px solid var(--rule); margin: 2rem 0; }
+      img { max-width: 100%; height: auto; }
+      figure { margin: 1.5rem 0; }
+      figcaption { color: var(--ink-soft); font-size: 0.9375rem; margin-top: 0.4rem; }
+
+      /* Body links are tap targets, not underlined words. 44px minimum touch
+         height, which is why inline links work on a page read one-handed. */
+      /* Vertical padding on an inline link expands the touch box past 44px
+         without breaking the line, which inline-block plus min-height does. */
+      main a {
+        color: var(--ink);
+        text-decoration-color: var(--accent);
+        text-decoration-thickness: 2px;
+        text-underline-offset: 3px;
+        padding: 0.7rem 0.1rem;
+      }
+      main a:hover { background: var(--accent); color: var(--accent-ink); text-decoration-color: transparent; }
+      nav a, footer a { color: var(--ink); }
+
+      .skip {
+        position: absolute;
+        left: -9999px;
+      }
+      .skip:focus { left: 0.5rem; top: 0.5rem; background: var(--paper); padding: 0.6rem; z-index: 2; }
+
+      .kicker {
+        font-size: 0.875rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+        margin: 0;
+      }
+
+      .banner {
+        background: var(--warn-bg);
+        border-left: 4px solid var(--warn-rule);
+        padding: 0.875rem 1rem;
+        margin: 0 0 1.5rem;
+      }
+      .banner p { margin: 0; }
+      .banner a { display: inline-block; min-height: 44px; padding: 0.55rem 0.15rem; }
+
+      .memberships { margin: 2.5rem 0 0; padding: 0; list-style: none; }
+      .memberships li { margin: 0; }
+      .memberships a { display: block; min-height: 44px; padding: 0.7rem 0; }
+
+      /* Share block. Dark mode inverts a QR code and scanners need dark
+         modules on a light field, so the code container is forced white
+         regardless of theme. */
+      .share { margin-top: 2.5rem; border-top: 1px solid var(--rule); padding-top: 1.25rem; }
+      .share summary {
+        cursor: pointer;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        font-weight: 600;
+      }
+      .code {
+        background: #fff;
+        color: #000;
+        padding: 1rem;
+        margin-top: 0.75rem;
+        text-align: center;
+        border: 1px solid #ccc;
+      }
+      .code img { width: 260px; height: 260px; max-width: 100%; display: block; margin: 0 auto; }
+      .code p { color: #333; font-size: 0.9375rem; margin: 0.75rem 0 0; }
+      .code .url { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.8125rem; word-break: break-all; }
+      button.share-btn {
+        font: inherit;
+        min-height: 44px;
+        padding: 0.7rem 1.1rem;
+        margin-top: 0.75rem;
+        background: var(--accent);
+        color: var(--accent-ink);
+        border: 0;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      footer.page {
+        margin-top: 2.5rem;
+        border-top: 1px solid var(--rule);
+        padding-top: 1.25rem;
+        color: var(--ink-soft);
+        font-size: 0.9375rem;
+      }
+      footer.page p { margin: 0 0 0.5rem; }
+      .who { display: flex; gap: 0.6rem; align-items: center; margin-bottom: 0.7rem; }
+      .who img { width: 40px; height: 40px; border-radius: 50%; flex: none; }
+      .who > span { display: block; }
+      .who .name { color: var(--ink); }
+      .who .cred { display: block; font-size: 0.875rem; }
+      .who a { padding: 0; }
+
+      table { border-collapse: collapse; width: 100%; font-size: 0.9375rem; }
+      th, td { text-align: left; padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+      th { font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-soft); }
+      .scroll { overflow-x: auto; }
+
+      @media (max-width: 380px) {
+        .wrap { padding-left: 0.875rem; padding-right: 0.875rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#content">Skip to content</a>
+    <div class="wrap">
+      <main id="content">
+        {
+          supersededBy && (
+            <div class="banner">
+              <p>This page has been replaced.</p>
+              <p>
+                <a href={link(supersededBy.path)}>Read {supersededBy.title} instead</a>
+              </p>
+            </div>
+          )
+        }
+        <slot />
+      </main>
+
+      {
+        shareSlug && shareUrl && (
+          <section class="share" aria-labelledby="share-h">
+            <h2 id="share-h" style="margin-top:0">Share this page</h2>
+            <details>
+              <summary>Show code to share</summary>
+              <div class="code">
+                <img src={link(`/qr/${shareSlug}.svg`)} alt={`QR code linking to ${shareUrl}`} loading="lazy" width="260" height="260" />
+                <p>Turn your brightness up</p>
+                <p class="url">{shareUrl.replace(/^https:\/\//, '')}</p>
+              </div>
+            </details>
+            <button class="share-btn" type="button" data-share-url={shareUrl} data-share-title={title} hidden>
+              Send the link
+            </button>
+            <script is:inline>
+              // Progressive enhancement. Web Share where the platform has it,
+              // clipboard where it does not, and nothing at all if neither
+              // exists, which leaves the QR code above still working.
+              (() => {
+                const btn = document.querySelector('button.share-btn');
+                if (!btn) return;
+                const url = btn.dataset.shareUrl;
+                const title = btn.dataset.shareTitle;
+                if (navigator.share) {
+                  btn.hidden = false;
+                  btn.addEventListener('click', () => {
+                    navigator.share({ title, url }).catch(() => {});
+                  });
+                } else if (navigator.clipboard) {
+                  btn.hidden = false;
+                  btn.textContent = 'Copy link';
+                  btn.addEventListener('click', async () => {
+                    try {
+                      await navigator.clipboard.writeText(url);
+                      btn.textContent = 'Link copied';
+                    } catch {
+                      btn.textContent = 'Copy failed';
+                    }
+                  });
+                }
+              })();
+            </script>
+          </section>
+        )
+      }
+
+      {
+        (authors.length > 0 || updated) && (
+          <footer class="page">
+            {
+              authors.length > 0 && (
+                <>
+                  <p>Written by</p>
+                  {authors.map((p) => (
+                    <div class="who">
+                      {p.data.avatar && <img src={link(`/authors/${p.data.avatar}`)} alt="" loading="lazy" width="40" height="40" />}
+                      <span>
+                        <span class="name">{p.data.link ? <a href={p.data.link}>{p.data.name}</a> : p.data.name}</span>
+                        {p.data.credential && <span class="cred">{p.data.credential}</span>}
+                      </span>
+                    </div>
+                  ))}
+                </>
+              )
+            }
+            {
+              reviewers.length > 0 && (
+                <>
+                  <p>Reviewed by</p>
+                  {reviewers.map((p) => (
+                    <div class="who">
+                      {p.data.avatar && <img src={link(`/authors/${p.data.avatar}`)} alt="" loading="lazy" width="40" height="40" />}
+                      <span>
+                        <span class="name">{p.data.link ? <a href={p.data.link}>{p.data.name}</a> : p.data.name}</span>
+                        {p.data.credential && <span class="cred">{p.data.credential}</span>}
+                      </span>
+                    </div>
+                  ))}
+                </>
+              )
+            }
+            {
+              updated && (
+                <p>
+                  Updated <time datetime={isoDate(updated)}>{readableDate(updated)}</time>
+                </p>
+              )
+            }
+            <p><a href={link('/')}>All wayside collections</a></p>
+          </footer>
+        )
+      }
+    </div>
+
+    <script is:inline data-goatcounter="https://wayside.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+  </body>
+</html>

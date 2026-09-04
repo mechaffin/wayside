@@ -1,0 +1,51 @@
+---
+import WaysideLayout from '../layouts/WaysideLayout.astro';
+import { link, allCollections, membersOf } from '../lib/resolve';
+
+const collections = await allCollections();
+const withCounts = await Promise.all(
+  collections.map(async (c) => ({
+    entry: c,
+    live: (await membersOf(c)).filter((m) => m.data.status === 'live').length,
+  })),
+);
+const topics = withCounts.filter((c) => c.entry.data.kind === 'topic');
+const events = withCounts.filter((c) => c.entry.data.kind === 'event');
+---
+
+<WaysideLayout
+  title="wayside"
+  description="Short, phone-readable pages about dog sports, behind printed QR codes at the venue."
+  path="/"
+>
+  <h1>wayside</h1>
+  <p>
+    Short pages you can read on a phone while standing at a trial. Each one sits
+    behind a printed code at the venue, and each one answers a single question
+    the sign promised to answer.
+  </p>
+
+  <h2>Topics</h2>
+  <ul class="memberships">
+    {topics.map(({ entry, live }) => (
+      <li>
+        <a href={link(`/c/${entry.id}`)}>{entry.data.title} ({live})</a>
+      </li>
+    ))}
+  </ul>
+
+  {
+    events.length > 0 && (
+      <>
+        <h2>Events</h2>
+        <ul class="memberships">
+          {events.map(({ entry, live }) => (
+            <li>
+              <a href={link(`/c/${entry.id}`)}>{entry.data.title} ({live})</a>
+            </li>
+          ))}
+        </ul>
+      </>
+    )
+  }
+</WaysideLayout>

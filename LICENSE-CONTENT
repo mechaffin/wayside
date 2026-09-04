@@ -1,0 +1,50 @@
+Creative Commons Attribution 4.0 International (CC BY 4.0)
+
+Copyright (c) 2026 Mary Ellen Chaffin and the contributors named in each page's
+frontmatter.
+
+This license covers the content in this repository: the prose in
+src/content/waysides/, the collection and author data in src/content/, and the
+images in public/. The code is covered separately by LICENSE.
+
+You may share and adapt this material for any purpose, including commercially,
+as long as you give appropriate credit, link to the license, and say whether
+you changed anything.
+
+The full legal code is at https://creativecommons.org/licenses/by/4.0/legalcode
+and the plain-language summary is at
+https://creativecommons.org/licenses/by/4.0/. Where anything below and the
+legal code disagree, the legal code governs.
+
+Attribution string
+------------------
+
+Use this, filling in the page title and slug:
+
+  "<page title>" from wayside by Mary Ellen Chaffin, licensed CC BY 4.0.
+  https://mechaffin.github.io/wayside/w/<slug>
+
+If you changed the material, add "Adapted from" in front and say what you
+changed.
+
+Where a page's frontmatter names more than one author, credit all of them. The
+page footer shows the byline as it should read.
+
+Trademarks are excluded
+-----------------------
+
+No trademark, service mark, club name, registry name, or logo is licensed by
+this repository. A logo in public/authors/ is there because its owner permitted
+this project to publish it, and that permission does not transfer to anyone
+reusing the content. Remove club and registry marks from anything you adapt
+unless you have your own permission.
+
+This exclusion applies to both licenses in this repository.
+
+Photographs
+-----------
+
+A photograph carries the credit named in its page's `photoCredit` frontmatter
+when one is present. Where a photograph is licensed to this project rather than
+owned by it, that page says so, and the CC BY grant above does not extend to
+it.

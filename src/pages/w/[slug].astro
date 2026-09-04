@@ -1,0 +1,53 @@
+---
+import { getCollection, getEntry, render } from 'astro:content';
+import WaysideLayout from '../../layouts/WaysideLayout.astro';
+import { link, collectionsFor, resolveAuthors } from '../../lib/resolve';
+
+export async function getStaticPaths() {
+  // Drafts get a page so the URL is testable, but no QR code and no print sheet.
+  const waysides = await getCollection('waysides');
+  return waysides.map((w) => ({ params: { slug: w.id }, props: { wayside: w } }));
+}
+
+const { wayside } = Astro.props;
+const { Content } = await render(wayside);
+
+const [authors, reviewers, memberships] = await Promise.all([
+  resolveAuthors(wayside.data.authors),
+  resolveAuthors(wayside.data.reviewedBy),
+  collectionsFor(wayside.id),
+]);
+
+const successor = wayside.data.supersededBy
+  ? await getEntry('waysides', wayside.data.supersededBy.id)
+  : undefined;
+---
+
+<WaysideLayout
+  title={wayside.data.title}
+  description={wayside.data.printLabel}
+  shareSlug={wayside.data.status === 'live' ? wayside.id : undefined}
+  path={`/w/${wayside.id}`}
+  authors={authors}
+  reviewedBy={reviewers}
+  updated={wayside.data.updated}
+  supersededBy={successor ? { title: successor.data.title, path: `/w/${successor.id}` } : undefined}
+>
+  {wayside.data.status === 'draft' && <p class="kicker">Draft</p>}
+  <h1>{wayside.data.title}</h1>
+  <Content />
+  {wayside.data.photoCredit && <p class="kicker">Photo: {wayside.data.photoCredit}</p>}
+
+  {
+    memberships.length > 0 && (
+      <>
+        <h2>More on this</h2>
+        <ul class="memberships">
+          {memberships.map((c) => (
+            <li><a href={link(`/c/${c.id}`)}>{c.data.title}</a></li>
+          ))}
+        </ul>
+      </>
+    )
+  }
+</WaysideLayout>

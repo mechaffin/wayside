@@ -1,0 +1,69 @@
+---
+import WaysideLayout from '../layouts/WaysideLayout.astro';
+import { link, allWaysides, collectionsFor, resolveAuthors, isStale, isoDate } from '../lib/resolve';
+
+const waysides = await allWaysides();
+const rows = await Promise.all(
+  waysides.map(async (w) => ({
+    id: w.id,
+    title: w.data.title,
+    status: w.data.status,
+    superseded: Boolean(w.data.supersededBy),
+    collections: (await collectionsFor(w.id)).map((c) => c.id),
+    authors: (await resolveAuthors(w.data.authors)).map((a) => a.data.name),
+    updated: w.data.updated,
+    stale: isStale(w.data.updated),
+  })),
+);
+const staleCount = rows.filter((r) => r.stale).length;
+---
+
+<WaysideLayout title="Inventory" noindex={true}>
+  <h1>Inventory</h1>
+  <p>
+    Every wayside in the repo. Open this before writing a new one, because the
+    page you want usually already exists. {rows.length} waysides,
+    {rows.filter((r) => r.status === 'live').length} live, {staleCount} flagged for review.
+  </p>
+  <p>
+    A wayside untouched for eighteen months gets flagged and keeps serving. Its
+    code is on a sign somewhere, and whether the content is still correct is a
+    judgment call rather than a date comparison.
+  </p>
+
+  <div class="scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Slug</th>
+          <th>Status</th>
+          <th>Collections</th>
+          <th>By</th>
+          <th>Updated</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((r) => (
+          <tr>
+            <td>
+              <a href={link(`/w/${r.id}`)}>{r.id}</a><br />
+              {r.title}
+            </td>
+            <td>
+              {r.status}
+              {r.superseded && <><br />superseded</>}
+            </td>
+            <td>{r.collections.join(', ') || 'none'}</td>
+            <td>{r.authors.join(', ')}</td>
+            <td>
+              <time datetime={isoDate(r.updated)}>{isoDate(r.updated)}</time>
+              {r.stale && <><br />review</>}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  <p><a href={link('/')}>All collections</a></p>
+</WaysideLayout>
