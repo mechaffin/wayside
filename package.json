@@ -11,6 +11,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "qr": "node scripts/build-qr.mjs",
+    "avatars": "node scripts/build-avatars.mjs",
     "validate": "node scripts/validate.mjs",
     "prebuild": "npm run validate && npm run qr",
     "check": "astro check"
