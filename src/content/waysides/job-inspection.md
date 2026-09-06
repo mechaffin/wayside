@@ -1,5 +1,5 @@
 ---
-title: Inspection
+title: Inspection committee
 printLabel: "Volunteer job: checking dogs before they run"
 updated: 2026-09-04
 authors:
@@ -9,38 +9,43 @@ reviewedBy: []
 status: draft
 ---
 
-You watch each dog walk and trot before it goes to the start line, looking for
-anything that says the dog should not run today. It is a short look at every
-dog, all day.
+You check every dog before it runs, and the call is yours. A dog that does not
+pass inspection does not compete that day.
 
-## What you actually do
+## What you're checking
 
-Watch the dog gait toward you and away from you. You are looking for a limp, a
-head bob, or a dog favoring a leg. If something looks off, you flag it to the
-judge, who makes the call. You are the extra set of eyes, not the final word.
+**Lameness.** Watch the dog gait toward you and away from you. You are looking
+for a limp, a head bob, or a dog favoring a leg. A lame dog running a course is
+the injury this sport works hardest to avoid.
 
-Occasionally you measure a dog that looks close to twelve inches at the
-shoulder, because course length depends on which side of that line the dog
-falls.
+**Bitches in season.** They are not eligible to run, and finding out at the
+start line is worse for everyone than finding out at inspection.
+
+**Height**, for the dogs that look close to twelve inches at the shoulder.
+Course length depends on which side of that line a dog falls, so those get
+measured.
+
+## Telling someone no
+
+This is the hard part, and it is worth knowing before you say yes to the job.
+The handler drove here, paid an entry, and got up early. You are going to tell
+some of them their dog is not running.
+
+Say it plainly, say it early, and give the reason. Most people take it fine
+once they hear it is about their dog getting hurt. You are not negotiating, and
+you do not have to.
 
 ## What you don't need
 
-Any prior experience. You are not diagnosing anything. You are noticing that a
-dog is moving oddly and saying so, which is something most dog people already
-do without thinking about it.
+Any prior experience. You are not diagnosing anything, you are noticing that a
+dog is moving oddly. Most dog people already do this without thinking about it.
 
-Someone will show you how the measuring device works. It takes about a minute
-to learn.
-
-## Who you work with
-
-Whoever has the paddock. Every dog passes both of you on its way to the line,
-so you end up working as a pair.
+Someone will show you the measuring device. It takes a minute to learn.
 
 ## What it's like
 
-Close to the field, so you see every dog run. More standing than sitting,
-since you need to watch dogs move.
+You work as a committee, not alone, so there is someone to check yourself
+against on a close call. You are next to the paddock, so every dog passes you
+and you see every run.
 
-The job matters. A lame dog running a course is the injury this sport works
-hardest to avoid, and you are the check that catches it.
+More standing than sitting, since you need to watch dogs move.
