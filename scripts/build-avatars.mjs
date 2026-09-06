@@ -9,7 +9,7 @@
  * enforces, because a headshot and a flat club logo compress nothing alike
  * and a single fixed quality misses one of them every time.
  */
-import { readdir, writeFile, stat } from 'node:fs/promises';
+import { readdir, writeFile } from 'node:fs/promises';
 import { join, parse } from 'node:path';
 import sharp from 'sharp';
 import { AUTHORS_DIR, AVATAR_DIR } from './lib/content.mjs';

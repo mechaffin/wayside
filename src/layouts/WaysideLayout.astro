@@ -41,6 +41,12 @@ const {
 const canonical = path ? absolute(path) : undefined;
 const shareUrl = path ? absolute(path) : undefined;
 
+// The print routes mirror the reader routes, so /w/paddock prints at
+// /print/w/paddock. Built from `path` rather than a literal, because a print
+// link that 404s is found by whoever is standing at the printer before an event.
+const printPath = path ? link(`/print${path}`) : undefined;
+const printText = path?.startsWith('/c/') ? 'Print the whole sheet' : 'Print this code';
+
 // Authors who are also listed as reviewers appear once, under the byline,
 // because "reviewed by the person who wrote it" is not a credibility signal.
 const reviewers = reviewedBy.filter((r) => !authors.some((a) => a.id === r.id));
@@ -209,8 +215,58 @@ const reviewers = reviewedBy.filter((r) => !authors.some((a) => a.id === r.id));
       th { font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-soft); }
       .scroll { overflow-x: auto; }
 
+      .print-link a { display: inline-block; min-height: 44px; padding: 0.7rem 0; }
+      .print-source { display: none; }
+
       @media (max-width: 380px) {
         .wrap { padding-left: 0.875rem; padding-right: 0.875rem; }
+      }
+
+      /* Printing the page itself, not the code. Someone at the venue without a
+         phone gets the same words on paper.
+
+         The variables are redefined rather than the rules overridden, so this
+         block does not have to be revisited every time a screen colour moves.
+         Dark mode on the printing machine would otherwise put light ink on a
+         white page and print nothing at all. */
+      @media print {
+        @page { size: letter portrait; margin: 0.6in; }
+        :root {
+          --ink: #000;
+          --ink-soft: #333;
+          --paper: #fff;
+          --rule: #999;
+          --accent: #000;
+          --accent-ink: #fff;
+          --warn-bg: #fff;
+          --warn-rule: #000;
+          --measure: none;
+        }
+        html { color-scheme: light; }
+        body { font-size: 11pt; line-height: 1.4; }
+        .wrap { max-width: none; padding: 0; }
+
+        /* The share block is the screen affordance for getting this page onto
+           a phone. On paper it is a QR code pointing at the sheet in your hand. */
+        .share, .skip, .print-link { display: none; }
+
+        .print-source {
+          display: block;
+          margin-top: 0.3in;
+          border-top: 1pt solid #999;
+          padding-top: 0.1in;
+          font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+          font-size: 8.5pt;
+          color: #333;
+        }
+
+        /* Tap targets are a touchscreen concern. On paper the padding just
+           opens gaps in the middle of a paragraph. */
+        main a { padding: 0; text-decoration-color: #666; text-decoration-thickness: 1px; }
+
+        h1, h2, h3 { break-after: avoid; }
+        li, figure, .who { break-inside: avoid; }
+        img { max-width: 100%; }
       }
     </style>
   </head>
@@ -246,6 +302,7 @@ const reviewers = reviewedBy.filter((r) => !authors.some((a) => a.id === r.id));
             <button class="share-btn" type="button" data-share-url={shareUrl} data-share-title={title} hidden>
               Send the link
             </button>
+            {printPath && <p class="print-link"><a href={printPath}>{printText}</a></p>}
             <script is:inline>
               // Progressive enhancement. Web Share where the platform has it,
               // clipboard where it does not, and nothing at all if neither
@@ -322,6 +379,13 @@ const reviewers = reviewedBy.filter((r) => !authors.some((a) => a.id === r.id));
             }
             <p><a href={link('/')}>All wayside collections</a></p>
           </footer>
+        )
+      }
+      {
+        canonical && (
+          <p class="print-source">
+            Printed from {canonical.replace(/^https:\/\//, '')}
+          </p>
         )
       }
     </div>

@@ -1,30 +1,21 @@
 ---
 /**
- * One printable sheet, US Letter portrait, print stylesheet only.
+ * The shell for a printable sheet, US Letter portrait.
  *
- * Standalone rather than wrapped in WaysideLayout: the sheet wants no site
- * chrome, no analytics, and no screen typography. Print it from the browser.
+ * Standalone rather than built on WaysideLayout: a sheet wants no site chrome,
+ * no analytics, and no screen typography. Both print routes share this so the
+ * card that holds one code and the sheet that holds eight cannot drift into
+ * printing at different sizes.
  */
-import { getCollection } from 'astro:content';
-import { membersOf, absolute, link, isoDate } from '../../lib/resolve';
-
-export async function getStaticPaths() {
-  const collections = await getCollection('collections');
-  return collections.map((c) => ({ params: { collection: c.id }, props: { collection: c } }));
+interface Props {
+  title: string;
+  /** Sheet heading. */
+  heading: string;
+  /** One line under the heading, telling a reader at the venue what to do. */
+  sub?: string;
 }
 
-const { collection } = Astro.props;
-const members = await membersOf(collection);
-// Drafts have no QR code, so a draft on a sheet would print an empty box.
-// `npm run validate` already fails on this; the filter keeps the dev preview honest.
-const printable = members.filter((m) => m.data.status === 'live');
-const codes = printable.map((m) => ({
-  slug: m.id,
-  title: m.data.title,
-  label: m.data.printLabel,
-  url: absolute(`/w/${m.id}`),
-  svg: link(`/qr/${m.id}.svg`),
-}));
+const { title, heading, sub } = Astro.props;
 ---
 
 <html lang="en">
@@ -32,7 +23,7 @@ const codes = printable.map((m) => ({
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
-    <title>{collection.data.title} print sheet</title>
+    <title>{title}</title>
     <style is:global>
       @page {
         size: letter portrait;
@@ -59,6 +50,9 @@ const codes = printable.map((m) => ({
         grid-template-columns: repeat(2, 1fr);
         gap: 0.3in;
       }
+      /* One code gets the full width, because a lone card floating in a
+         half-page column reads as a printing mistake. */
+      .grid.single { grid-template-columns: 1fr; }
       .card {
         border: 1pt solid #000;
         padding: 0.18in;
@@ -71,6 +65,7 @@ const codes = printable.map((m) => ({
       /* 1.5in minimum. Below that a phone camera cannot focus close enough in
          poor light to read the code off paper in a sheet protector. */
       .card img { width: 1.9in; height: 1.9in; display: block; margin: 0 auto 0.1in; }
+      .grid.single .card img { width: 3.2in; height: 3.2in; }
       .card .url {
         font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
         font-size: 8.5pt;
@@ -92,27 +87,9 @@ const codes = printable.map((m) => ({
       scan every code off the paper before you tape it down.
     </p>
     <div class="sheet">
-      <h1>{collection.data.title}</h1>
-      <p class="sub">
-        Point your phone camera at a code.
-        {collection.data.printedOn && <> Printed {isoDate(collection.data.printedOn)}.</>}
-      </p>
-      <div class="grid">
-        {
-          codes.map((c) => (
-            <div class="card">
-              <h2>{c.title}</h2>
-              <p class="label">{c.label}</p>
-              <img src={c.svg} alt="" />
-              <p class="url">{c.url.replace(/^https:\/\//, '')}</p>
-            </div>
-          ))
-        }
-      </div>
-      <p class="note">
-        {collection.data.summary} Every code above points at a page on
-        {' '}{absolute('/').replace(/^https:\/\//, '')}
-      </p>
+      <h1>{heading}</h1>
+      {sub && <p class="sub">{sub}</p>}
+      <slot />
     </div>
   </body>
 </html>

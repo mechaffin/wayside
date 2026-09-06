@@ -1,0 +1,44 @@
+---
+/**
+ * One code, one sheet. For a wayside posted on its own, away from any
+ * collection: a sign at the paddock gate rather than a table of four.
+ *
+ * Only live waysides get a route. A draft has no QR code, so a print page for
+ * one would be a card with an empty box in it.
+ */
+import PrintLayout from '../../../layouts/PrintLayout.astro';
+import { liveWaysides, collectionsFor, absolute, link } from '../../../lib/resolve';
+
+export async function getStaticPaths() {
+  const waysides = await liveWaysides();
+  return waysides.map((w) => ({ params: { slug: w.id }, props: { wayside: w } }));
+}
+
+const { wayside } = Astro.props;
+const url = absolute(`/w/${wayside.id}`);
+const memberships = await collectionsFor(wayside.id);
+---
+
+<PrintLayout
+  title={`${wayside.data.title} print card`}
+  heading={wayside.data.title}
+  sub="Point your phone camera at the code."
+>
+  <div class="grid single">
+    <div class="card">
+      <h2>{wayside.data.title}</h2>
+      <p class="label">{wayside.data.printLabel}</p>
+      <img src={link(`/qr/${wayside.id}.svg`)} alt="" />
+      <p class="url">{url.replace(/^https:\/\//, '')}</p>
+    </div>
+  </div>
+  {
+    memberships.length > 0 && (
+      <p class="note">
+        This page is also on the sheet for{' '}
+        {memberships.map((c) => c.data.title).join(', ')}. Print the whole set from
+        {' '}{absolute(`/print/c/${memberships[0].id}`).replace(/^https:\/\//, '')}
+      </p>
+    )
+  }
+</PrintLayout>

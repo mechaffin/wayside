@@ -20,6 +20,8 @@ codes on one taped sheet.
 npm install
 npm run dev        # http://localhost:4321/wayside
 npm run validate   # content checks, writes link-report.json
+npm run qr         # QR SVGs into public/qr/, which dev does not generate
+npm run avatars    # author images in src/content/authors/ to public/authors/
 npm run build      # runs validate and the QR script first
 ```
 
@@ -36,6 +38,7 @@ Node 22.12 or newer.
 | [src/lib/resolve.ts](src/lib/resolve.ts) | Reverse index, base-URL joining, staleness. |
 | [scripts/validate.mjs](scripts/validate.mjs) | Content checks Zod cannot express. |
 | [scripts/build-qr.mjs](scripts/build-qr.mjs) | One SVG per live wayside and per collection. |
+| [scripts/build-avatars.mjs](scripts/build-avatars.mjs) | Author source images down to the 96px WebP the pages ship. |
 
 ## Routes
 
@@ -44,7 +47,8 @@ Node 22.12 or newer.
 | `/w/<slug>` | One wayside. This is what a printed code points at. |
 | `/c/<slug>` | A collection, in order. The link for an entry confirmation email. |
 | `/` | Every collection, topics first. |
-| `/print/<collection>` | One US Letter sheet of codes. Print from the browser. |
+| `/print/c/<slug>` | One US Letter sheet of every code in a collection. |
+| `/print/w/<slug>` | One code on its own sheet, for a wayside posted alone. |
 | `/inventory` | Maintainer view. Open this before writing anything new. |
 
 ## The two things that cannot be undone

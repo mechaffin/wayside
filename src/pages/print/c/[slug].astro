@@ -1,0 +1,55 @@
+---
+/**
+ * Every code in one collection, on one sheet. This is the event case: the four
+ * codes taped to a table.
+ *
+ * Mirrors /c/<slug>, so the print URL for any page is its path with /print in
+ * front. WaysideLayout builds the link that way rather than from a literal.
+ */
+import { getCollection } from 'astro:content';
+import PrintLayout from '../../../layouts/PrintLayout.astro';
+import { membersOf, absolute, link, isoDate } from '../../../lib/resolve';
+
+export async function getStaticPaths() {
+  const collections = await getCollection('collections');
+  return collections.map((c) => ({ params: { slug: c.id }, props: { collection: c } }));
+}
+
+const { collection } = Astro.props;
+const members = await membersOf(collection);
+// Drafts have no QR code, so a draft on a sheet would print an empty box.
+// `npm run validate` already fails on this; the filter keeps the dev preview honest.
+const printable = members.filter((m) => m.data.status === 'live');
+const codes = printable.map((m) => ({
+  slug: m.id,
+  title: m.data.title,
+  label: m.data.printLabel,
+  url: absolute(`/w/${m.id}`),
+  svg: link(`/qr/${m.id}.svg`),
+}));
+
+const printedOn = collection.data.printedOn;
+---
+
+<PrintLayout
+  title={`${collection.data.title} print sheet`}
+  heading={collection.data.title}
+  sub={`Point your phone camera at a code.${printedOn ? ` Printed ${isoDate(printedOn)}.` : ''}`}
+>
+  <div class="grid">
+    {
+      codes.map((c) => (
+        <div class="card">
+          <h2>{c.title}</h2>
+          <p class="label">{c.label}</p>
+          <img src={c.svg} alt="" />
+          <p class="url">{c.url.replace(/^https:\/\//, '')}</p>
+        </div>
+      ))
+    }
+  </div>
+  <p class="note">
+    {collection.data.summary} Every code above points at a page on
+    {' '}{absolute('/').replace(/^https:\/\//, '')}
+  </p>
+</PrintLayout>
